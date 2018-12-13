@@ -1,0 +1,6 @@
+name: AFKPlusPrefix
+version: ${project.version}
+main: net.lapismc.afkplusprefix.AFKPlusPrefix
+api-version: 1.13
+depend: [AFKPlus]
+authors: [Dart2112]
