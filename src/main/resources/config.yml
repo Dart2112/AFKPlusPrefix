@@ -1,1 +1,4 @@
+# Enable this if the prefix is not showing or disappears
+CompatibilityMode: false
+
 Prefix: "&4AFK&r "

@@ -13,12 +13,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public final class AFKPlusPrefix extends JavaPlugin implements Listener {
 
     private Scoreboard board;
     private Team afkTeam;
+    private ArrayList<UUID> afkPlayers = new ArrayList<>();
 
     @Override
     public void onEnable() {
@@ -28,21 +30,38 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         afkTeam = board.registerNewTeam("AFK");
         afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
         afkTeam.setPrefix(ChatColor.translateAlternateColorCodes('&', getConfig().getString("Prefix")));
+        if (getConfig().getBoolean("CompatibilityMode")) {
+            Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+                for (UUID uuid : afkPlayers) {
+                    Player p = Bukkit.getPlayer(uuid);
+                    if (p.getScoreboard().getTeam("AFK") != afkTeam) {
+                        forcePlayerAFK(p);
+                    }
+                    afkTeam.addEntry(p.getName());
+                }
+            }, 5, 5);
+        }
     }
 
     private void enableAFK(UUID uuid) {
         Player p = Bukkit.getPlayer(uuid);
-        if (p.getScoreboard() != board && p.getScoreboard().getTeam("AFK") != afkTeam) {
-            afkTeam = p.getScoreboard().registerNewTeam("AFK");
-            afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
-            afkTeam.setPrefix(ChatColor.translateAlternateColorCodes('&', getConfig().getString("Prefix")));
+        if (getConfig().getBoolean("CompatibilityMode") && p.getScoreboard().getTeam("AFK") != afkTeam) {
+            forcePlayerAFK(p);
         }
         afkTeam.addEntry(p.getName());
+        afkPlayers.add(uuid);
     }
 
     private void disableAFK(UUID uuid) {
         Player p = Bukkit.getPlayer(uuid);
         afkTeam.removeEntry(p.getName());
+        afkPlayers.remove(uuid);
+    }
+
+    private void forcePlayerAFK(Player p) {
+        afkTeam = p.getScoreboard().registerNewTeam("AFK");
+        afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
+        afkTeam.setPrefix(ChatColor.translateAlternateColorCodes('&', getConfig().getString("Prefix")));
     }
 
     @EventHandler
