@@ -28,7 +28,6 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         saveDefaultConfig();
         board = Bukkit.getScoreboardManager().getNewScoreboard();
         afkTeam = board.registerNewTeam("AFK");
-        afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
         afkTeam.setPrefix(ChatColor.translateAlternateColorCodes('&', getConfig().getString("Prefix")));
         if (getConfig().getBoolean("CompatibilityMode")) {
             Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
@@ -48,19 +47,28 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         if (getConfig().getBoolean("CompatibilityMode") && p.getScoreboard().getTeam("AFK") == null) {
             generateTeam(p);
         }
-        afkTeam.addEntry(p.getName());
+        p.getScoreboard().getTeam("AFK").addEntry(p.getName());
         afkPlayers.add(uuid);
     }
 
     private void disableAFK(UUID uuid) {
         Player p = Bukkit.getPlayer(uuid);
-        afkTeam.removeEntry(p.getName());
+        p.getScoreboard().getTeam("AFK").removeEntry(p.getName());
         afkPlayers.remove(uuid);
     }
 
     private void generateTeam(Player p) {
-        afkTeam = p.getScoreboard().registerNewTeam("AFK");
-        afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
+        reloadConfig();
+        if (p.getScoreboard().getTeam("AFK") == null)
+            afkTeam = p.getScoreboard().registerNewTeam("AFK");
+        if (getConfig().getBoolean("ShowInPlayerTag"))
+            afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
+        else
+            afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+        if (getConfig().getBoolean("ShouldCollide"))
+            afkTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS);
+        else
+            afkTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
         afkTeam.setPrefix(ChatColor.translateAlternateColorCodes('&', getConfig().getString("Prefix")));
     }
 
@@ -77,6 +85,7 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         e.getPlayer().setScoreboard(board);
+        generateTeam(e.getPlayer());
     }
 
     @EventHandler

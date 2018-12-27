@@ -1,4 +1,13 @@
 # Enable this if the prefix is not showing or disappears
 CompatibilityMode: false
 
+#Should the prefix be displayed in the players name tag above their head
+ShowInPlayerTag: true
+
+#Should AFK players be able to collide with non AFK players
+#Setting this to false stops players being pushed by other players hence cancelling AFK
+ShouldCollide: false
+
+#The prefix to add to the tab list and player tag if enabled
+#Set this to "" if you just want to use the ShouldCollide feature
 Prefix: "&4AFK&r "
