@@ -34,7 +34,7 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
             Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
                 for (UUID uuid : afkPlayers) {
                     Player p = Bukkit.getPlayer(uuid);
-                    if (p.getScoreboard().getTeam("AFK") != afkTeam) {
+                    if (p.getScoreboard().getTeam("AFK") == null) {
                         generateTeam(p);
                     }
                     afkTeam.addEntry(p.getName());
