@@ -35,7 +35,7 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
                 for (UUID uuid : afkPlayers) {
                     Player p = Bukkit.getPlayer(uuid);
                     if (p.getScoreboard().getTeam("AFK") != afkTeam) {
-                        forcePlayerAFK(p);
+                        generateTeam(p);
                     }
                     afkTeam.addEntry(p.getName());
                 }
@@ -45,8 +45,8 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
 
     private void enableAFK(UUID uuid) {
         Player p = Bukkit.getPlayer(uuid);
-        if (getConfig().getBoolean("CompatibilityMode") && p.getScoreboard().getTeam("AFK") != afkTeam) {
-            forcePlayerAFK(p);
+        if (getConfig().getBoolean("CompatibilityMode") && p.getScoreboard().getTeam("AFK") == null) {
+            generateTeam(p);
         }
         afkTeam.addEntry(p.getName());
         afkPlayers.add(uuid);
@@ -58,7 +58,7 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         afkPlayers.remove(uuid);
     }
 
-    private void forcePlayerAFK(Player p) {
+    private void generateTeam(Player p) {
         afkTeam = p.getScoreboard().registerNewTeam("AFK");
         afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
         afkTeam.setPrefix(ChatColor.translateAlternateColorCodes('&', getConfig().getString("Prefix")));
