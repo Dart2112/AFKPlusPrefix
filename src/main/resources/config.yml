@@ -5,7 +5,7 @@ CompatibilityMode: false
 ShowInPlayerTag: true
 
 #Should AFK players be able to collide with non AFK players
-#Setting this to false stops players being pushed by other players hence cancelling AFK
+#Setting this to false stops players being pushed by other players hence canceling AFK
 ShouldCollide: false
 
 #The prefix to add to the tab list and player tag if enabled
