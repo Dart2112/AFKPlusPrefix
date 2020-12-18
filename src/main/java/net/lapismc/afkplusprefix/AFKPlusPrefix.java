@@ -27,18 +27,18 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(this, this);
         saveDefaultConfig();
         board = Bukkit.getScoreboardManager().getNewScoreboard();
-        afkTeam = board.registerNewTeam("AFK");
-        afkTeam.setPrefix(ChatColor.translateAlternateColorCodes('&', getConfig().getString("Prefix", "&4AFK&r ")));
+        generateTeam();
         if (getConfig().getBoolean("CompatibilityMode")) {
             Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
                 for (UUID uuid : afkPlayers) {
                     Player p = Bukkit.getPlayer(uuid);
                     if (p == null)
                         continue;
-                    if (p.getScoreboard().getTeam("AFK") == null) {
-                        generateTeam(p);
+                    if (p.getScoreboard() != board) {
+                        p.setScoreboard(board);
                     }
-                    afkTeam.addEntry(p.getName());
+                    if (!afkTeam.hasEntry(p.getName()))
+                        afkTeam.addEntry(p.getName());
                 }
             }, 5, 5);
         }
@@ -48,10 +48,10 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         Player p = Bukkit.getPlayer(uuid);
         if (p == null)
             return;
-        if (getConfig().getBoolean("CompatibilityMode") && p.getScoreboard().getTeam("AFK") == null) {
-            generateTeam(p);
+        if (getConfig().getBoolean("CompatibilityMode") && p.getScoreboard() != board) {
+            p.setScoreboard(board);
         }
-        p.getScoreboard().getTeam("AFK").addEntry(p.getName());
+        board.getTeam("AFK").addEntry(p.getName());
         afkPlayers.add(uuid);
     }
 
@@ -59,14 +59,14 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         Player p = Bukkit.getPlayer(uuid);
         if (p == null)
             return;
-        p.getScoreboard().getTeam("AFK").removeEntry(p.getName());
+        board.getTeam("AFK").removeEntry(p.getName());
         afkPlayers.remove(uuid);
     }
 
-    private void generateTeam(Player p) {
+    private void generateTeam() {
         reloadConfig();
-        if (p.getScoreboard().getTeam("AFK") == null)
-            afkTeam = p.getScoreboard().registerNewTeam("AFK");
+        if (board.getTeam("AFK") == null)
+            afkTeam = board.registerNewTeam("AFK");
         if (getConfig().getBoolean("ShowInPlayerTag"))
             afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
         else
@@ -75,7 +75,12 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
             afkTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS);
         else
             afkTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
-        afkTeam.setPrefix(ChatColor.translateAlternateColorCodes('&', getConfig().getString("Prefix", "&4AFK&r ")));
+        String prefix = getConfig().getString("Prefix", "&4AFK&r ");
+        String suffix = getConfig().getString("Suffix", "");
+        if (prefix != null && !prefix.equals(""))
+            afkTeam.setPrefix(ChatColor.translateAlternateColorCodes('&', prefix));
+        if (suffix != null && !suffix.equals(""))
+            afkTeam.setSuffix(ChatColor.translateAlternateColorCodes('&', suffix));
     }
 
     @EventHandler
@@ -91,7 +96,6 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         e.getPlayer().setScoreboard(board);
-        generateTeam(e.getPlayer());
     }
 
     @EventHandler

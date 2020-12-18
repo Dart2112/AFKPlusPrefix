@@ -11,3 +11,4 @@ ShouldCollide: false
 #The prefix to add to the tab list and player tag if enabled
 #Set this to "" if you just want to use the ShouldCollide feature
 Prefix: "&4AFK&r "
+Suffix: ""
