@@ -7,7 +7,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
@@ -18,27 +17,24 @@ import java.util.UUID;
 
 public final class AFKPlusPrefix extends JavaPlugin implements Listener {
 
-    private Scoreboard board;
-    private Team afkTeam;
     private final ArrayList<UUID> afkPlayers = new ArrayList<>();
 
     @Override
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);
         saveDefaultConfig();
-        board = Bukkit.getScoreboardManager().getNewScoreboard();
-        generateTeam();
         if (getConfig().getBoolean("CompatibilityMode")) {
             Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
                 for (UUID uuid : afkPlayers) {
                     Player p = Bukkit.getPlayer(uuid);
                     if (p == null)
                         continue;
-                    if (p.getScoreboard() != board) {
-                        p.setScoreboard(board);
+                    if (p.getScoreboard().getTeam("AFK") == null) {
+                        generateTeam(p.getScoreboard());
                     }
-                    if (!afkTeam.hasEntry(p.getName()))
-                        afkTeam.addEntry(p.getName());
+                    if (!p.getScoreboard().getTeam("AFK").hasEntry(p.getName())) {
+                        p.getScoreboard().getTeam("AFK").addEntry(p.getName());
+                    }
                 }
             }, 5, 5);
         }
@@ -48,10 +44,11 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         Player p = Bukkit.getPlayer(uuid);
         if (p == null)
             return;
-        if (getConfig().getBoolean("CompatibilityMode") && p.getScoreboard() != board) {
-            p.setScoreboard(board);
+        if (p.getScoreboard().getTeam("AFK") == null) {
+            generateTeam(p.getScoreboard());
         }
-        board.getTeam("AFK").addEntry(p.getName());
+        Team t = p.getScoreboard().getTeam("AFK");
+        t.addEntry(p.getName());
         afkPlayers.add(uuid);
     }
 
@@ -59,14 +56,17 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         Player p = Bukkit.getPlayer(uuid);
         if (p == null)
             return;
-        board.getTeam("AFK").removeEntry(p.getName());
+        if (p.getScoreboard().getTeam("AFK") == null) {
+            generateTeam(p.getScoreboard());
+        }
+        Team t = p.getScoreboard().getTeam("AFK");
+        t.removeEntry(p.getName());
         afkPlayers.remove(uuid);
     }
 
-    private void generateTeam() {
+    private void generateTeam(Scoreboard s) {
+        Team afkTeam = s.registerNewTeam("AFK");
         reloadConfig();
-        if (board.getTeam("AFK") == null)
-            afkTeam = board.registerNewTeam("AFK");
         if (getConfig().getBoolean("ShowInPlayerTag"))
             afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
         else
@@ -91,11 +91,6 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
     @EventHandler
     public void onAFKStop(AFKStopEvent e) {
         disableAFK(e.getPlayer().getUUID());
-    }
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent e) {
-        e.getPlayer().setScoreboard(board);
     }
 
     @EventHandler
