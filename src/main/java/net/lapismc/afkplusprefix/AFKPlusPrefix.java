@@ -1,9 +1,10 @@
 package net.lapismc.afkplusprefix;
 
+import net.lapismc.afkplus.AFKPlus;
 import net.lapismc.afkplus.api.AFKStartEvent;
 import net.lapismc.afkplus.api.AFKStopEvent;
+import net.lapismc.afkplus.util.core.LapisCoreConfiguration;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,9 +19,11 @@ import java.util.UUID;
 public final class AFKPlusPrefix extends JavaPlugin implements Listener {
 
     private final ArrayList<UUID> afkPlayers = new ArrayList<>();
+    LapisCoreConfiguration config;
 
     @Override
     public void onEnable() {
+        config = ((AFKPlus) Bukkit.getPluginManager().getPlugin("AKFPlus")).config;
         Bukkit.getPluginManager().registerEvents(this, this);
         saveDefaultConfig();
         if (getConfig().getBoolean("CompatibilityMode")) {
@@ -78,9 +81,9 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         String prefix = getConfig().getString("Prefix", "&4AFK&r ");
         String suffix = getConfig().getString("Suffix", "");
         if (prefix != null && !prefix.equals(""))
-            afkTeam.setPrefix(ChatColor.translateAlternateColorCodes('&', prefix));
+            afkTeam.setPrefix(config.colorMessage(prefix));
         if (suffix != null && !suffix.equals(""))
-            afkTeam.setSuffix(ChatColor.translateAlternateColorCodes('&', suffix));
+            afkTeam.setSuffix(config.colorMessage(suffix));
     }
 
     @EventHandler
