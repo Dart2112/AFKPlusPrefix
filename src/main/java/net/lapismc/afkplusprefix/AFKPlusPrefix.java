@@ -23,7 +23,7 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        config = ((AFKPlus) Bukkit.getPluginManager().getPlugin("AKFPlus")).config;
+        config = ((AFKPlus) Bukkit.getPluginManager().getPlugin("AFKPlus")).config;
         Bukkit.getPluginManager().registerEvents(this, this);
         saveDefaultConfig();
         if (getConfig().getBoolean("CompatibilityMode")) {
