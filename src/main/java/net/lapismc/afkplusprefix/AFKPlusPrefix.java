@@ -3,7 +3,7 @@ package net.lapismc.afkplusprefix;
 import net.lapismc.afkplus.AFKPlus;
 import net.lapismc.afkplus.api.AFKStartEvent;
 import net.lapismc.afkplus.api.AFKStopEvent;
-import net.lapismc.afkplus.util.core.LapisCoreConfiguration;
+import net.lapismc.lapiscore.LapisCoreConfiguration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

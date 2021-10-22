@@ -1,7 +1,7 @@
 # Enable this if the prefix is not showing or disappears
 CompatibilityMode: false
 
-#Should the prefix be displayed in the players name tag above their head
+#Should the Players name tag be shown, set too false to hide player name tags for AFK players
 ShowInPlayerTag: true
 
 #Should AFK players be able to collide with non AFK players
