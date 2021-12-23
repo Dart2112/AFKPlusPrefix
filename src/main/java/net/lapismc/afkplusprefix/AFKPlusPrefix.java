@@ -3,7 +3,7 @@ package net.lapismc.afkplusprefix;
 import net.lapismc.afkplus.AFKPlus;
 import net.lapismc.afkplus.api.AFKStartEvent;
 import net.lapismc.afkplus.api.AFKStopEvent;
-import net.lapismc.lapiscore.LapisCoreConfiguration;
+import net.lapismc.afkplus.util.core.LapisCoreConfiguration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,7 +23,7 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        config = ((AFKPlus) Bukkit.getPluginManager().getPlugin("AFKPlus")).config;
+        config = AFKPlus.getInstance().config;
         Bukkit.getPluginManager().registerEvents(this, this);
         saveDefaultConfig();
         if (getConfig().getBoolean("CompatibilityMode")) {
