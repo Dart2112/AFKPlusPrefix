@@ -80,9 +80,9 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
             afkTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
         String prefix = getConfig().getString("Prefix", "&4AFK&r ");
         String suffix = getConfig().getString("Suffix", "");
-        if (prefix != null && !prefix.equals(""))
+        if (!prefix.equals(""))
             afkTeam.setPrefix(config.colorMessage(prefix));
-        if (suffix != null && !suffix.equals(""))
+        if (!suffix.equals(""))
             afkTeam.setSuffix(config.colorMessage(suffix));
     }
 
