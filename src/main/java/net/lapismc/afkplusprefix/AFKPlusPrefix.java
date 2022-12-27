@@ -41,6 +41,7 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
                 }
             }, 5, 5);
         }
+        getLogger().info(getName() + " v." + getDescription().getVersion() + " has been enabled!");
     }
 
     private void enableAFK(UUID uuid) {
