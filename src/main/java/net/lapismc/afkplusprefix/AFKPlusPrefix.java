@@ -43,6 +43,11 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         }
     }
 
+    @Override
+    public void onDisable() {
+        afkPlayers.forEach(this::disableAFK);
+    }
+
     private void enableAFK(UUID uuid) {
         Player p = Bukkit.getPlayer(uuid);
         if (p == null)
