@@ -46,7 +46,7 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        afkPlayers.forEach(this::disableAFK);
+        afkPlayers.forEach(this::forceDisableAFK);
     }
 
     private void enableAFK(UUID uuid) {
@@ -62,6 +62,11 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
     }
 
     private void disableAFK(UUID uuid) {
+        forceDisableAFK(uuid);
+        afkPlayers.remove(uuid);
+    }
+
+    public void forceDisableAFK(UUID uuid) {
         Player p = Bukkit.getPlayer(uuid);
         if (p == null)
             return;
@@ -70,7 +75,6 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         }
         Team t = p.getScoreboard().getTeam("AFK");
         t.removeEntry(p.getName());
-        afkPlayers.remove(uuid);
     }
 
     private void generateTeam(Scoreboard s) {
