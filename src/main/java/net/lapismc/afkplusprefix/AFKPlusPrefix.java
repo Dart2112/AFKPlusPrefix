@@ -41,6 +41,21 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
                 }
             }, 5, 5);
         }
+        //Check if the team currently exists
+        Team t = Bukkit.getScoreboardManager().getMainScoreboard().getTeam("AFK");
+        if (t != null) {
+            //The team exists, lets verify the settings
+            boolean match = t.getPrefix().equals(getConfig().getString("Prefix")) &&
+                    t.getSuffix().equals(getConfig().getString("Suffix")) &&
+                    t.getOption(Team.Option.COLLISION_RULE).equals(getConfig().getBoolean("ShouldCollide") ?
+                            Team.OptionStatus.ALWAYS : Team.OptionStatus.NEVER) &&
+                    t.getOption(Team.Option.NAME_TAG_VISIBILITY).equals(getConfig().getBoolean("ShowInPlayerTag") ?
+                            Team.OptionStatus.ALWAYS : Team.OptionStatus.NEVER);
+            if (!match) {
+                //If at least one setting doesn't match, unregister the team so that we can regen it
+                t.unregister();
+            }
+        }
         getLogger().info(getName() + " v." + getDescription().getVersion() + " has been enabled!");
     }
 
