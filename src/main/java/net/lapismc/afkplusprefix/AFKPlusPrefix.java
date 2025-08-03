@@ -4,14 +4,15 @@ import net.lapismc.afkplus.AFKPlus;
 import net.lapismc.afkplus.api.AFKStartEvent;
 import net.lapismc.afkplus.api.AFKStopEvent;
 import net.lapismc.afkplus.util.core.LapisCoreConfiguration;
+import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public final class AFKPlusPrefix extends JavaPlugin implements Listener {
 
     private final ArrayList<UUID> afkPlayers = new ArrayList<>();
+    private Chat chat = null;
     LapisCoreConfiguration config;
 
     @Override
@@ -26,36 +28,20 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         config = AFKPlus.getInstance().config;
         Bukkit.getPluginManager().registerEvents(this, this);
         saveDefaultConfig();
-        if (getConfig().getBoolean("CompatibilityMode")) {
-            Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
-                for (UUID uuid : afkPlayers) {
-                    Player p = Bukkit.getPlayer(uuid);
-                    if (p == null)
-                        continue;
-                    if (p.getScoreboard().getTeam("AFK") == null) {
-                        generateTeam(p.getScoreboard());
-                    }
-                    if (!p.getScoreboard().getTeam("AFK").hasEntry(p.getName())) {
-                        p.getScoreboard().getTeam("AFK").addEntry(p.getName());
-                    }
-                }
-            }, 5, 5);
+        //Setup VaultAPI Chat access
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            //Throw error and shutdown
+            getLogger().severe("Vault not present, disabling plugin");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
-        //Check if the team currently exists
-        Team t = Bukkit.getScoreboardManager().getMainScoreboard().getTeam("AFK");
-        if (t != null) {
-            //The team exists, lets verify the settings
-            boolean match = t.getPrefix().equals(getConfig().getString("Prefix")) &&
-                    t.getSuffix().equals(getConfig().getString("Suffix")) &&
-                    t.getOption(Team.Option.COLLISION_RULE).equals(getConfig().getBoolean("ShouldCollide") ?
-                            Team.OptionStatus.ALWAYS : Team.OptionStatus.NEVER) &&
-                    t.getOption(Team.Option.NAME_TAG_VISIBILITY).equals(getConfig().getBoolean("ShowInPlayerTag") ?
-                            Team.OptionStatus.ALWAYS : Team.OptionStatus.NEVER);
-            if (!match) {
-                //If at least one setting doesn't match, unregister the team so that we can regen it
-                t.unregister();
-            }
+        RegisteredServiceProvider<Chat> rsp = getServer().getServicesManager().getRegistration(Chat.class);
+        if (rsp == null) {
+            getLogger().severe("No chat provider present, make sure you have a plugin that hooks into Vault for us to use, disabling plugin");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
+        chat = rsp.getProvider();
         getLogger().info(getName() + " v." + getDescription().getVersion() + " has been enabled!");
     }
 
@@ -68,11 +54,10 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         Player p = Bukkit.getPlayer(uuid);
         if (p == null)
             return;
-        if (p.getScoreboard().getTeam("AFK") == null) {
-            generateTeam(p.getScoreboard());
-        }
-        Team t = p.getScoreboard().getTeam("AFK");
-        t.addEntry(p.getName());
+        if (!getConfig().getString("AFK.Prefix", "").isEmpty())
+            chat.setPlayerPrefix(p, getMessage(p, "AFK.Prefix"));
+        if (!getConfig().getString("AFK.Suffix", "").isEmpty())
+            chat.setPlayerSuffix(p, getMessage(p, "AFK.Suffix"));
         afkPlayers.add(uuid);
     }
 
@@ -85,30 +70,28 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         Player p = Bukkit.getPlayer(uuid);
         if (p == null)
             return;
-        if (p.getScoreboard().getTeam("AFK") == null) {
-            generateTeam(p.getScoreboard());
-        }
-        Team t = p.getScoreboard().getTeam("AFK");
-        t.removeEntry(p.getName());
+        if (!getConfig().getString("NotAFK.Prefix").isEmpty())
+            chat.setPlayerPrefix(p, getMessage(p, "NotAFK.Prefix"));
+        else
+            chat.setPlayerPrefix(p, "");
+        if (!getConfig().getString("NotAFK.Suffix").isEmpty())
+            chat.setPlayerSuffix(p, getMessage(p, "NotAFK.Suffix"));
+        else
+            chat.setPlayerSuffix(p, "");
     }
 
-    private void generateTeam(Scoreboard s) {
-        Team afkTeam = s.registerNewTeam("AFK");
-        reloadConfig();
-        if (getConfig().getBoolean("ShowInPlayerTag"))
-            afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
-        else
-            afkTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
-        if (getConfig().getBoolean("ShouldCollide"))
-            afkTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS);
-        else
-            afkTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
-        String prefix = getConfig().getString("Prefix", "&4AFK&r ");
-        String suffix = getConfig().getString("Suffix", "");
-        if (!prefix.equals(""))
-            afkTeam.setPrefix(config.colorMessage(prefix));
-        if (!suffix.equals(""))
-            afkTeam.setSuffix(config.colorMessage(suffix));
+    /**
+     * Get a message from the config, color replace and placeholder replace the contents
+     *
+     * @param p   The player for placeholder replacement
+     * @param key The key of the message in the config
+     * @return a colored and PAPI replaced message
+     */
+    private String getMessage(OfflinePlayer p, String key) {
+        String format = getConfig().getString(key);
+        String papi = AFKPlus.getInstance().config.replacePlaceholders(format, p);
+        String message = AFKPlus.getInstance().config.colorMessage(papi);
+        return message;
     }
 
     @EventHandler

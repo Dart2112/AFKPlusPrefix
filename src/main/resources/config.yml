@@ -1,14 +1,9 @@
-# Enable this if the prefix is not showing or disappears
-CompatibilityMode: false
-
-#Should the Players name tag be shown, set too false to hide player name tags for AFK players
-ShowInPlayerTag: true
-
-#Should AFK players be able to collide with non AFK players
-#Setting this to false stops players being pushed by other players hence canceling AFK
-ShouldCollide: false
-
-#The prefix to add to the tab list and player tag if enabled
+#The prefix to register with VaultAPI if set. These can be PAPI placeholders as well
 #Set this to "" if you just want to use the ShouldCollide feature
-Prefix: "&4AFK&r "
-Suffix: ""
+AFK:
+  Prefix: "&4AFK&r "
+  Suffix: ""
+#These can be used to set your normal prefix and suffix when not AFK if you wish. These can be PAPI placeholders as well
+NotAFK:
+  Prefix: "&4NotAFK&r "
+  Suffix: ""

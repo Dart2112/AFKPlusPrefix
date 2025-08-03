@@ -28,6 +28,7 @@ repositories {
 dependencies {
     compileOnly('net.lapismc:AFKPlus:3.5.0')
     compileOnly('io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT')
+    compileOnly('net.milkbowl.vault:VaultAPI:1.7')
 }
 
 def targetJavaVersion = 21
