@@ -1,5 +1,9 @@
+#Replace PAPI Placeholders
+#If your tab/player tag plugins handles this you may wish to have AFKPlusPrefix set the prefix/suffix with the placeholder so that it can be updated frequently by another plugin
+#Otherwise the value will remain the same for the length of time the player is AFK as the prefix is only changed when the players AFK state changes
+ShouldProcessPAPITags: true
 #The prefix to register with VaultAPI if set. These can be PAPI placeholders as well
-#Set this to "" if you just want to use the ShouldCollide feature
+#You can use the primary and secondary colour codes registered in AFKPlus as well if you wish
 AFK:
   Prefix: "&4AFK&r "
   Suffix: ""

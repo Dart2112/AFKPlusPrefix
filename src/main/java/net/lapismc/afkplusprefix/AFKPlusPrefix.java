@@ -37,6 +37,8 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         }
         RegisteredServiceProvider<Chat> rsp = getServer().getServicesManager().getRegistration(Chat.class);
         if (rsp == null) {
+            //This happens if vault is installed but a plugin that implements the chat component isn't
+            //Most permission plugins should cover this so I doubt we will often run into issues
             getLogger().severe("No chat provider present, make sure you have a plugin that hooks into Vault for us to use, disabling plugin");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
@@ -47,6 +49,7 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        //Reset the players prefix/suffix to make sure they are correct when they reconnect
         afkPlayers.forEach(this::forceDisableAFK);
     }
 
@@ -88,9 +91,14 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
      * @return a colored and PAPI replaced message
      */
     private String getMessage(OfflinePlayer p, String key) {
-        String format = getConfig().getString(key);
-        String papi = AFKPlus.getInstance().config.replacePlaceholders(format, p);
-        String message = AFKPlus.getInstance().config.colorMessage(papi);
+        //Get the message from the config
+        String message = getConfig().getString(key);
+        //Only process the PAPI tags if it is enabled in the config
+        //This is so that another plugin can update PAPI tags more frequently if they enable that feature
+        if (getConfig().getBoolean("ShouldProcessPAPITags"))
+            message = AFKPlus.getInstance().config.replacePlaceholders(message, p);
+        //Apply color codes to the message after all other processing to ensure placeholder codes are translated as well
+        message = AFKPlus.getInstance().config.colorMessage(message);
         return message;
     }
 
