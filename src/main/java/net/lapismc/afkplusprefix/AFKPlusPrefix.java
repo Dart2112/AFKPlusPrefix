@@ -73,11 +73,11 @@ public final class AFKPlusPrefix extends JavaPlugin implements Listener {
         Player p = Bukkit.getPlayer(uuid);
         if (p == null)
             return;
-        if (!getConfig().getString("NotAFK.Prefix").isEmpty())
+        if (!getConfig().getString("NotAFK.Prefix", "").isEmpty())
             chat.setPlayerPrefix(p, getMessage(p, "NotAFK.Prefix"));
         else
             chat.setPlayerPrefix(p, "");
-        if (!getConfig().getString("NotAFK.Suffix").isEmpty())
+        if (!getConfig().getString("NotAFK.Suffix", "").isEmpty())
             chat.setPlayerSuffix(p, getMessage(p, "NotAFK.Suffix"));
         else
             chat.setPlayerSuffix(p, "");
