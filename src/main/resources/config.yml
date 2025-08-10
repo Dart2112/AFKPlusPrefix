@@ -9,5 +9,5 @@ AFK:
   Suffix: ""
 #These can be used to set your normal prefix and suffix when not AFK if you wish. These can be PAPI placeholders as well
 NotAFK:
-  Prefix: "&4NotAFK&r "
+  Prefix: ""
   Suffix: ""
